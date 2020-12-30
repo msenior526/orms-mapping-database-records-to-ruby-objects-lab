@@ -1,3 +1,4 @@
+require 'pry'
 class Student
   attr_accessor :id, :name, :grade
 
@@ -71,35 +72,43 @@ class Student
       FROM students
       WHERE grade < 12
       SQL
-      DB[:conn].execute(sql)
+      students = DB[:conn].execute(sql)
+      students.map do |student|
+        self.new_from_db(student)
+      end
   end
 
   def self.first_X_students_in_grade_10(x)
     sql = <<-SQL
-       SELECT name, grade 
+       SELECT * 
        FROM students 
        WHERE grade = 10 
-       LIMIT #{x} 
+       LIMIT ? 
     SQL
-    DB[:conn].execute(sql)
+    students = DB[:conn].execute(sql, x)
+    students.map do |student|
+      self.new_from_db(student)
+    end
   end
 
   def self.first_student_in_grade_10
     sql = <<-SQL
-       SELECT * 
+       SELECT *
        FROM students
        WHERE grade = 10 
        LIMIT 1
     SQL
-    DB[:conn].execute(sql)
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+    end.first
   end
 
   def self.all_students_in_grade_X(x)
     sql = <<-SQL
        SELECT * 
        FROM students 
-       WHERE grade = #{x} 
+       WHERE grade = ? 
     SQL
-    DB[:conn].execute(sql)
+    DB[:conn].execute(sql, x)
   end
 end
